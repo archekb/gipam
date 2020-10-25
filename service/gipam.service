@@ -1,0 +1,15 @@
+[Unit]
+Description=GIPAM Driver for Docker
+Before=docker.service
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/gipam
+EnvironmentFile=/opt/gipam/.env
+ExecStart=/opt/gipam/gipam -unix
+User=root
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
