@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-// NewConfig - create new config from env and flags and check parameter exists. No validate, only exists!
+// NewConfig - create new config from defaults, env and flags, than check parameter exists. No validate, only exists!
 func NewConfig() (*Config, error) {
 	var cnf Config = Config{}
 
