@@ -1,0 +1,34 @@
+version: '2.4'
+services:
+
+  container1:
+    image: busybox:latest
+    networks:
+      - gnet
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    command: ip addr show
+
+  container2:
+    image: busybox:latest
+    networks:
+      - gnet
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    command: ip addr show
+
+  container3:
+    image: busybox:latest
+    networks:
+      - gnet
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    command: ip addr show
+
+
+networks:
+  gnet:
+    driver: bridge
+    enable_ipv6: true
+    ipam:
+      driver: gipam
