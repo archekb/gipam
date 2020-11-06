@@ -23,5 +23,5 @@ jobs:
 
       - name: Run tests
         run: |
-        cd gipam
-        go test -v ./...
+          cd gipam
+          go test -v ./...
