@@ -22,6 +22,4 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run tests
-        run: |
-          cd gipam
-          go test -v ./...
+        run: go test -v ./...

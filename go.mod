@@ -2,11 +2,9 @@ module github.com/archekb/gipam
 
 go 1.15
 
-replace github.com/archekb/gipam/pkg/leaser => ./pkg/leaser
-
-replace github.com/archekb/gipam/pkg/gipam => ./pkg/gipam
-
-replace github.com/archekb/gipam/pkg/config => ./pkg/config
+// replace github.com/archekb/gipam/pkg/leaser => ./pkg/leaser
+// replace github.com/archekb/gipam/pkg/gipam => ./pkg/gipam
+// replace github.com/archekb/gipam/pkg/config => ./pkg/config
 
 require (
 	github.com/Microsoft/go-winio v0.4.14 // indirect
