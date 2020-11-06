@@ -6,41 +6,56 @@ Docker IPAM driver for dynamic IPv4/IPv6 allocation from Address Pool. Address p
 ### Configuration ###
 ---
 
-Plugin file in `/etc/docker/plugins` will be create automaticaly if you use sudo or your user in Docker group. 
+Plugin file will be create automaticaly, if you use sudo or user on the Docker group.
+* UNIX socket it will be `/run/docker/plugins/gipam.sock` [used by default]
+* TCP server it will be `/etc/docker/plugins/gipam.spec`
 
-Enviroment variables (First stage):
-* GIPAM_UNIX - use UNIX socket for connecting to Docker. Default: `false`
-* GIPAM_ADDRESS - Address and port for Docker connect. Default: `:9090`
+**Attention!** Docker cache plugin file. It's mean if you start `gipam` with UNIX socket, Docker will works only with UNIX socket while you not reboot host. Look *Stop* section for more information.
+
+
+**Attention!** IPv4 address pool can't be empty it's libnetwork [https://github.com/moby/libnetwork/pull/826] restriction. [https://github.com/moby/moby/issues/32850]
+
+
+Enviroment variables:
+
+* GIPAM_ADDRESS - Address and port for TCP Docker connect. If address is empty usung UNIX socket. Default: ``
 
 * GIPAM_FILE - file for saving and restore state of driver. Default: `leases.json`
-
-* GIPAM_V6 - Main IPv6 Address pool. Example: `fe80::/56`
+* GIPAM_V6 - Main IPv6 Address pool. Example: `2001:db8::/56`
 * GIPAM_V6AB - IPv6 allocate block cutting from Main IPv6 Address pool for one service (mask). Default: `64`
 * GIPAM_V4 - Main IPv4 Address pool. Example: `192.168.0.0/16`
 * GIPAM_V4AB - IPv6 allocate block cutting from Main IPv4 Address pool for one service (mask). Default: `24`
 
-Command line arguments (Second stage rewrite First stage):
-* -unix - use UNIX socket for connecting to Docker. Default: `false`
-* -address - Address and port for Docker connect (need configure in Docker too). Default: `:9090`
+
+Command line arguments (rewrite Enviroment variables):
+
+* -address - Address and port for TCP Docker connect. If address is empty usung UNIX socket. Default: ``
 
 * -file - file for saving and restore state of driver. Default: `leases.json`
-* 
-* -v6 - Main IPv6 Address pool. Example: `fe80::/56`
+* -v6 - Main IPv6 Address pool. Example: `2001:db8::/56`
 * -v6ab - IPv6 allocate block cutting from Main IPv6 Address pool for one service (mask). Default: `64`
 * -v4 - Main IPv4 Address pool. Example: `192.168.0.0/16`
 * -v4ab - IPv6 allocate block cutting from Main IPv4 Address pool for one service (mask). Default: `24`
 
-Lease file config (Third stage rewrite First and Second stage):
+
+Lease file config (Enviroment variables and Command line interface arguments will ignored):
+
 ` {
-  "V6Pool": "2a02:17d0::/56",
-  "V6AllocateBlock": 64,
-  "V6Idx": 1,
-  "V4Pool": "192.168.0.0/16",
-  "V4AllocateBlock": 24,
-  "V4Idx": 1,
-  "Allocated": [],
-  "Free": []
+  "v6": "2001:db8::/56",
+  "v6ab": 64,
+  "v6idx": 1,
+  "v4": "192.168.0.0/16",
+  "v4ab": 24,
+  "v4idx": 1,
+  "allocated": [],
+  "free": []
 }`
+
+
+#### Tests ####
+---
+
+	go test -cover -count=1 ./...
 
 
 #### Build ####
@@ -52,9 +67,7 @@ Lease file config (Third stage rewrite First and Second stage):
 ### Run ###
 ---
 
-	sudo ./gipam -unix -v6 2a02:17d0::/56 -v4 10.2.0.0/16
-
-Need *sudo* or your user must be in Docker group, because creates plugin file: `/etc/docker/plugins`
+	sudo ./gipam -v6 2001:db8::/54 -v4 192.168.0.0/16
 
 
 ### Stop ###
@@ -62,18 +75,19 @@ Need *sudo* or your user must be in Docker group, because creates plugin file: `
 
 	ctrl+с
 
+If you want change connection method [UNIX, TCP] without host reboot. You need:
+1) Stop all conteiners who use `gipam` driver
+2) Stop `gipam` plugin
+3) Delete plugin file:
+* for UNIX socket `/run/docker/plugins/gipam.sock`
+* for TCP server `/etc/docker/plugins/gipam.spec`
+4) Restart docker daemon by `systemctl restart docker`
+5) If not works, go to step 1.
 
-### Set as Service ###
+
+### More info ###
 ---
 
-1.    Copy dir `as_service` from root of repo to opt and rename it to `gipam`
-2.    Build `gipam` and copy it to `/opt/gipam/`
-3.    Configure `gipam` by set Enviroment variables in file `/opt/gipam/.env`
-4.    Create symlink and setup service:
+API: https://docs.docker.com/engine/extend/plugin_api/
 
-	sudo su
-	ln -s /opt/gipam/gipam.service /etc/systemd/system/gipam.service
-	systemctl enable gipam
-	systemctl start gipam
-
-**Attention!** Application save data to `/opt/gipam/leases.json` and creates plugin file in `/etc/docker/plugins`, for this operations need user with right permissions (or *root*).
+GO plugin helpers: https://github.com/docker/go-plugins-helpers

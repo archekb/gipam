@@ -6,7 +6,7 @@ After=network.target
 [Service]
 WorkingDirectory=/opt/gipam
 EnvironmentFile=/opt/gipam/.env
-ExecStart=/opt/gipam/gipam -unix
+ExecStart=/opt/gipam/gipam
 User=root
 Restart=on-failure
 RestartSec=5
